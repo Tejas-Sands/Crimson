@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crimson Awakening</title>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        overflow: hidden;
+        font-family: 'Courier New', Courier, monospace;
+        color: white;
+      }
+      
+      #game-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* HUD Overlay */
+      #hud-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* Let clicks pass through to canvas */
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .hud-top {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+      }
+
+      .hud-panel {
+        background: rgba(20, 0, 0, 0.7);
+        border: 1px solid #500;
+        padding: 10px 20px;
+        border-radius: 4px;
+        min-width: 200px;
+      }
+
+      .health-row, .blood-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 15px;
+        background-size: contain;
+        background-repeat: no-space;
+        display: inline-block;
+      }
+
+      .health-text {
+        color: #e74c3c;
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .blood-bar-container {
+        width: 160px;
+        height: 20px;
+        border: 1px solid #500;
+        background: rgba(40, 0, 0, 0.5);
+      }
+
+      .blood-bar-fill {
+        height: 100%;
+        background: #b00;
+        transition: width 0.2s, background-color 0.2s;
+      }
+
+      .hud-bottom {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .ability-slot {
+        width: 60px;
+        height: 60px;
+        background: rgba(20, 20, 20, 0.8);
+        border: 1px solid #600;
+        margin: 0 10px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        box-sizing: border-box;
+      }
+
+      .ability-slot.active {
+        background: rgba(60, 0, 0, 0.8);
+      }
+
+      .ability-key {
+        font-size: 14px;
+        color: #aaa;
+      }
+
+      .ability-name {
+        font-size: 12px;
+        color: #666;
+      }
+      
+      .ability-slot.active .ability-name {
+        color: #fff;
+      }
+
+      .cooldown-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        height: 0%;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-QJYvbC-j.js"></script>
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
+      
+      <div id="hud-layer">
+        <div class="hud-top">
+          <div class="hud-panel">
+            <div class="health-row">
+              <span class="icon" id="heart-icon"></span>
+              <span class="health-text" id="health-value">100 / 100</span>
+            </div>
+            <div class="blood-row">
+              <span class="icon" id="blood-icon"></span>
+              <div class="blood-bar-container">
+                <div class="blood-bar-fill" id="blood-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="hud-panel" style="text-align: center;">
+            <div id="time-value" style="font-size: 20px; color: #f39c12; margin-top: 5px;">DAYTIME</div>
+          </div>
+        </div>
+        
+        <div class="hud-bottom" id="abilities-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+    
+  </body>
+</html>
