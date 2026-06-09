@@ -3,7 +3,7 @@ import { GAME, PLAYER, COMBAT } from '../data/constants.js';
 import { Combat } from '../systems/Combat.js';
 
 export class Player {
-  constructor(x, y) {
+  constructor(x, y, scene, assetGen) {
     this.x = x;
     this.y = y;
     this.width = 16;

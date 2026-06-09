@@ -3,7 +3,7 @@ import { GAME } from '../data/constants.js';
 import { distance } from '../core/Utils.js';
 
 export class BossAldric {
-  constructor(x, y) {
+  constructor(x, y, scene, assetGen) {
     this.x = x;
     this.y = y;
     this.width = 32; // 2x2 tiles

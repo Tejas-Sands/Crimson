@@ -27,12 +27,21 @@ if (tipEl) {
 // Start game immediately
 game.start();
 
+// Fill progress bar
+const progressFill = document.getElementById('progress-fill');
+if (progressFill) {
+  // Simple step animation
+  setTimeout(() => { progressFill.style.width = '40%'; }, 50);
+  setTimeout(() => { progressFill.style.width = '80%'; }, 200);
+  setTimeout(() => { progressFill.style.width = '100%'; }, 450);
+}
+
 // Fade out loader smoothly
 const loader = document.getElementById('loader');
 if (loader) {
-  // Give it just 100ms so the CSS fade transition has time to trigger
+  // Wait for progress bar to finish filling before starting fade
   setTimeout(() => {
     loader.style.opacity = '0';
     setTimeout(() => loader.remove(), 800);
-  }, 100);
+  }, 750);
 }

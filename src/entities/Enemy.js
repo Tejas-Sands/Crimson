@@ -3,7 +3,7 @@ import { GAME } from '../data/constants.js';
 import { distance, angleToDir } from '../core/Utils.js';
 
 export class Enemy {
-  constructor(x, y) {
+  constructor(x, y, scene, assetGen) {
     this.x = x;
     this.y = y;
     this.width = 16;

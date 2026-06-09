@@ -76,6 +76,23 @@
         font-style: italic;
         text-align: center;
         max-width: 80%;
+        margin-top: 15px;
+      }
+      
+      .progress-bar-container {
+        width: 220px;
+        height: 4px;
+        background: rgba(139, 0, 0, 0.2);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 15px;
+      }
+      
+      .progress-bar-fill {
+        height: 100%;
+        background: #e74c3c;
+        width: 0%;
+        transition: width 0.4s cubic-bezier(0.1, 0.8, 0.25, 1);
       }
       
       @keyframes pulse {
@@ -194,11 +211,28 @@
         height: 0%;
       }
     </style>
+    <script>
+      window.addEventListener('error', function(e) {
+        const errDiv = document.createElement('div');
+        errDiv.style.color = '#ff4d4d';
+        errDiv.style.marginTop = '20px';
+        errDiv.style.fontFamily = 'monospace';
+        errDiv.style.fontSize = '14px';
+        errDiv.style.padding = '10px';
+        errDiv.style.border = '1px solid #ff4d4d';
+        errDiv.style.background = 'rgba(255,0,0,0.1)';
+        errDiv.innerText = 'CRASH: ' + e.message + '\nLine: ' + e.lineno + ' in ' + e.filename;
+        document.getElementById('loader').appendChild(errDiv);
+      });
+    </script>
   </head>
   <body>
     <div id="loader">
       <div class="spinner"></div>
       <div class="loading-text">AWAKENING...</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
       <div class="loading-tip" id="loading-tip"></div>
     </div>
 
