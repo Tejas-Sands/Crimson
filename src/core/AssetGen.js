@@ -42,56 +42,56 @@ export class AssetGen {
   generateTiles() {
     const s = GAME.TILE_SIZE;
     
-    // GRASS
+    // GRASS (Noir: Dark charcoal ground)
     let c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#2d4c1e'; // Base dark green
+    c.ctx.fillStyle = '#141416'; // Base dark charcoal
     c.ctx.fillRect(0, 0, s, s);
-    c.ctx.fillStyle = '#3a5f27'; // Highlight
+    c.ctx.fillStyle = '#1e1e22'; // Highlight
     c.ctx.fillRect(2, 2, 4, 4);
     c.ctx.fillRect(10, 8, 3, 3);
     this.tiles[TILE_TYPES.GRASS] = c.canvas;
 
-    // COBBLE
+    // COBBLE (Noir: Dark grey stone)
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#333';
+    c.ctx.fillStyle = '#222226';
     c.ctx.fillRect(0, 0, s, s);
-    c.ctx.fillStyle = '#444';
+    c.ctx.fillStyle = '#32323a';
     c.ctx.fillRect(1, 1, 6, 6);
     c.ctx.fillRect(8, 2, 6, 5);
     c.ctx.fillRect(2, 9, 5, 5);
     c.ctx.fillRect(9, 9, 6, 6);
     this.tiles[TILE_TYPES.COBBLE] = c.canvas;
 
-    // WALL
+    // WALL (Noir: Deep black concrete/stone)
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#1a1515'; // Very dark brown/grey
+    c.ctx.fillStyle = '#0a0a0d'; // Near black
     c.ctx.fillRect(0, 0, s, s);
-    c.ctx.fillStyle = '#2a2020';
+    c.ctx.fillStyle = '#18181f';
     c.ctx.fillRect(0, 0, s, s/2 - 1);
     c.ctx.fillRect(0, s/2, s, s/2 - 1);
     this.tiles[TILE_TYPES.WALL] = c.canvas;
 
-    // WATER
+    // WATER (Noir: Dark obsidian water)
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#142b3b';
+    c.ctx.fillStyle = '#050508';
     c.ctx.fillRect(0, 0, s, s);
-    c.ctx.fillStyle = '#1e3f56';
+    c.ctx.fillStyle = '#1b1b22';
     c.ctx.fillRect(2, 4, 8, 2);
     c.ctx.fillRect(6, 10, 6, 2);
     this.tiles[TILE_TYPES.WATER] = c.canvas;
 
-    // CHURCH FLOOR
+    // CHURCH FLOOR (Noir: Stark silver and black tiles)
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#dcdcdc'; // Pale stone
+    c.ctx.fillStyle = '#141416'; // Very dark tile
     c.ctx.fillRect(0, 0, s, s);
-    c.ctx.fillStyle = '#fff';
+    c.ctx.fillStyle = '#a0a0a8'; // Stark white/silver tile
     c.ctx.fillRect(0, 0, s/2, s/2);
     c.ctx.fillRect(s/2, s/2, s/2, s/2);
     this.tiles[TILE_TYPES.CHURCH] = c.canvas;
 
-    // DOOR
+    // DOOR (Noir: Charcoal wood door)
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#3e2723'; // Wood brown
+    c.ctx.fillStyle = '#26262b'; 
     c.ctx.fillRect(0, 0, s, s);
     c.ctx.fillStyle = '#000';
     c.ctx.fillRect(12, 8, 2, 2); // Handle
@@ -103,40 +103,44 @@ export class AssetGen {
 
     // Player (Idle/Walk Frame 1)
     let c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#111'; // Dark figure
+    c.ctx.fillStyle = '#0d0d0f'; // Dark outline / shadows
     c.ctx.fillRect(4, 2, 8, 14); // Body
-    c.ctx.fillStyle = '#8b0000'; // Dark red cape
+    c.ctx.fillStyle = '#e74c3c'; // Vibrant crimson cape (Stands out in noir!)
     c.ctx.fillRect(3, 4, 10, 10);
-    c.ctx.fillStyle = '#ffcccc'; // Pale skin
+    c.ctx.fillStyle = '#f5f5f7'; // Ghostly white pale skin
     c.ctx.fillRect(6, 2, 4, 4); // Head
     this.sprites.player = c.canvas;
 
     // Player Bat Form
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#000';
+    c.ctx.fillStyle = '#0a0a0c'; // Pitch black bat
     c.ctx.fillRect(6, 6, 4, 4); // Body
     c.ctx.beginPath(); // Wings
     c.ctx.moveTo(6, 8); c.ctx.lineTo(0, 4); c.ctx.lineTo(2, 10); c.ctx.fill();
     c.ctx.moveTo(10, 8); c.ctx.lineTo(16, 4); c.ctx.lineTo(14, 10); c.ctx.fill();
+    // Glowing red vampire eyes in bat form
+    c.ctx.fillStyle = '#e74c3c';
+    c.ctx.fillRect(7, 6, 1, 1);
+    c.ctx.fillRect(8, 6, 1, 1);
     this.sprites.bat = c.canvas;
 
-    // Guard Enemy
+    // Guard Enemy (Noir: Steel grey armor, cold metal helmet)
     c = this.createCanvas(s, s);
-    c.ctx.fillStyle = '#3b4252'; // Blue/Grey armor
+    c.ctx.fillStyle = '#2d2d33'; // Charcoal armor
     c.ctx.fillRect(4, 2, 8, 14);
-    c.ctx.fillStyle = '#d8dee9'; // Silver helmet
+    c.ctx.fillStyle = '#9c9ca3'; // Dimmish metal helmet
     c.ctx.fillRect(5, 2, 6, 5);
     this.sprites.guard = c.canvas;
 
     // Boss Aldric (32x32)
     c = this.createCanvas(32, 32);
-    c.ctx.fillStyle = '#2c3e50'; // Robes
+    c.ctx.fillStyle = '#1a1a1f'; // Pitch black robes
     c.ctx.fillRect(8, 4, 16, 28);
-    c.ctx.fillStyle = '#f1c40f'; // Gold trim
+    c.ctx.fillStyle = '#ffffff'; // Stark white trim (replaces gold)
     c.ctx.fillRect(10, 6, 12, 4);
-    c.ctx.fillStyle = '#fff'; // White hair/beard
+    c.ctx.fillStyle = '#f0f0f5'; // Cold white hair/beard
     c.ctx.fillRect(12, 2, 8, 6);
-    c.ctx.fillStyle = '#7f8c8d'; // Staff
+    c.ctx.fillStyle = '#3c3c43'; // Steel staff
     c.ctx.fillRect(24, 2, 2, 30);
     this.sprites.aldric = c.canvas;
   }

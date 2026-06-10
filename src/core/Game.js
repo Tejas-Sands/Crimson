@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GAME_STATES, GAME } from '../data/constants.js';
+import { GAME_STATES, GAME, PLAYER } from '../data/constants.js';
 import { Input } from './Input.js';
 import { Camera } from './Camera.js';
 import { AssetGen } from './AssetGen.js';
@@ -50,7 +50,7 @@ export class Game {
 
     this.tileMap = new TileMap(DuskHollowData, this.assetGen, this.scene);
     
-    this.state = GAME_STATES.PLAYING; 
+    this.state = GAME_STATES.MENU; 
     this.lastTime = performance.now();
     
     this.player = new Player(30 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen);
@@ -69,10 +69,70 @@ export class Game {
     this.entities.push(new BossAldric(30 * GAME.TILE_SIZE, 15 * GAME.TILE_SIZE, this.scene, this.assetGen));
     this.entities.push(new Enemy(34 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen));
     this.entities.push(new Enemy(28 * GAME.TILE_SIZE, 20 * GAME.TILE_SIZE, this.scene, this.assetGen));
+
+    // Center camera on player initially (so background menu shows the scene)
+    this.camera.x = this.player.x + this.player.width/2;
+    this.camera.z = this.player.y + this.player.height/2;
+    this.camera.threeCamera.position.x = this.camera.x + this.camera.cameraOffset.x;
+    this.camera.threeCamera.position.y = this.camera.cameraOffset.y;
+    this.camera.threeCamera.position.z = this.camera.z + this.camera.cameraOffset.z;
+    this.camera.threeCamera.lookAt(this.camera.x, 0, this.camera.z);
   }
 
   start() {
     requestAnimationFrame((time) => this.loop(time));
+  }
+
+  restart() {
+    // 1. Reset Player
+    this.player.hp = PLAYER.START_HP;
+    this.player.blood = 0;
+    this.player.isStarving = true;
+    this.player.isDead = false;
+    this.player.isBatForm = false;
+    this.player.isDodging = false;
+    this.player.isInvincible = false;
+    this.player.invincibilityTimer = 0;
+    this.player.x = 30 * GAME.TILE_SIZE;
+    this.player.y = 26 * GAME.TILE_SIZE;
+    this.player.sprite.position.set(this.player.x, 8, this.player.y);
+    this.player.sprite.material = this.player.materialPlayer;
+    this.player.sprite.material.opacity = 1.0;
+    
+    // 2. Reset Day/Night
+    this.dayNight.time = 0;
+    this.dayNight.darknessAlpha = 0;
+    this.dayNight.updatePlayerLight(this.player);
+
+    // 3. Clear and Respawn Entities
+    for (let entity of this.entities) {
+      if (entity.sprite) {
+        this.scene.remove(entity.sprite);
+      }
+    }
+    this.entities = [];
+    this.entities.push(new BossAldric(30 * GAME.TILE_SIZE, 15 * GAME.TILE_SIZE, this.scene, this.assetGen));
+    this.entities.push(new Enemy(34 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen));
+    this.entities.push(new Enemy(28 * GAME.TILE_SIZE, 20 * GAME.TILE_SIZE, this.scene, this.assetGen));
+
+    // 4. Clear particles and combat hitboxes
+    this.combatSystem.activeAttacks = [];
+    for (let p of this.particleSystem.particles) {
+      this.scene.remove(p.mesh);
+      p.mesh.material.dispose();
+    }
+    this.particleSystem.particles = [];
+    
+    // Hide Game Over and Victory screens
+    document.getElementById('game-over-screen').classList.remove('visible');
+    document.getElementById('victory-screen').classList.remove('visible');
+  }
+
+  startPlaying() {
+    this.restart();
+    this.state = GAME_STATES.PLAYING;
+    this.lastTime = performance.now();
+    document.getElementById('hud-layer').style.display = 'flex';
   }
 
   loop(time) {
@@ -108,13 +168,28 @@ export class Game {
     
     this.particleSystem.update(dt);
 
-    // Camera targets player center (Note: 2D y is now 3D z)
+    // Camera targets player center
     this.camera.update(this.player.x + this.player.width/2, this.player.y + this.player.height/2);
     
     // Update player point light
     this.dayNight.updatePlayerLight(this.player);
     
     this.hud.update(this);
+
+    // Check Loss conditions
+    if (this.player.hp <= 0 || this.player.isDead) {
+      this.state = GAME_STATES.GAME_OVER;
+      document.getElementById('game-over-screen').classList.add('visible');
+      document.getElementById('hud-layer').style.display = 'none';
+    }
+
+    // Check Win conditions (Boss Aldric defeated)
+    const aldric = this.entities.find(e => e instanceof BossAldric);
+    if (aldric && aldric.isDead) {
+      this.state = GAME_STATES.VICTORY;
+      document.getElementById('victory-screen').classList.add('visible');
+      document.getElementById('hud-layer').style.display = 'none';
+    }
   }
 
   render() {
@@ -122,14 +197,11 @@ export class Game {
       // Screen effects
       if (this.player.isStarving) {
         const pulse = Math.abs(Math.sin(Date.now() / 300));
-        // We can handle vignette with CSS overlay or Post-Processing.
-        // For now, let's use a CSS trick in HUD.
         document.getElementById('hud-layer').style.boxShadow = `inset 0 0 ${100 + pulse*100}px rgba(255,0,0,${0.3 * pulse})`;
       } else {
         document.getElementById('hud-layer').style.boxShadow = 'none';
       }
-
-      this.renderer.render(this.scene, this.camera.threeCamera);
     }
+    this.renderer.render(this.scene, this.camera.threeCamera);
   }
 }
