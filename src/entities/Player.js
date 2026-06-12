@@ -35,32 +35,73 @@ export class Player {
     this.humanoidGroup = new THREE.Group();
     this.sprite.add(this.humanoidGroup);
 
-    // Torso (dark charcoal vestments)
-    const torsoGeo = new THREE.BoxGeometry(6, 6, 4);
-    const torsoMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1c });
+    // Torso (sleek black gothic suit)
+    const torsoGeo = new THREE.BoxGeometry(6, 7, 4);
+    const torsoMat = new THREE.MeshLambertMaterial({ color: 0x0a0a0c });
     this.torso = new THREE.Mesh(torsoGeo, torsoMat);
-    this.torso.position.set(0, 8, 0);
+    this.torso.position.set(0, 8.5, 0);
     this.torso.castShadow = true;
     this.torso.receiveShadow = true;
     this.humanoidGroup.add(this.torso);
 
-    // Cape (flowing crimson red)
-    const capeGeo = new THREE.BoxGeometry(7, 9, 0.8);
-    const capeMat = new THREE.MeshLambertMaterial({ color: 0xe74c3c });
+    // Chest Amulet (Glowing Red Crystal)
+    const amuletGeo = new THREE.BoxGeometry(1.5, 2.5, 1);
+    const amuletMat = new THREE.MeshBasicMaterial({ color: 0xff1122 });
+    this.amulet = new THREE.Mesh(amuletGeo, amuletMat);
+    this.amulet.position.set(0, 1.0, 2.1);
+    this.torso.add(this.amulet);
+
+    // Cape (Black exterior)
+    const capeGeo = new THREE.BoxGeometry(7.5, 10, 0.6);
+    const capeMat = new THREE.MeshLambertMaterial({ color: 0x050505 });
     this.cape = new THREE.Mesh(capeGeo, capeMat);
-    this.cape.position.set(0, 7.5, -2.4);
+    this.cape.position.set(0, 8.0, -2.4);
     this.cape.castShadow = true;
     this.cape.receiveShadow = true;
     this.humanoidGroup.add(this.cape);
 
-    // Head (pale gothic silver-gray skin)
+    // Cape Inner Lining (Crimson Red)
+    const capeInnerGeo = new THREE.BoxGeometry(7.3, 9.8, 0.2);
+    const capeInnerMat = new THREE.MeshLambertMaterial({ color: 0xd81b2a });
+    this.capeInner = new THREE.Mesh(capeInnerGeo, capeInnerMat);
+    this.capeInner.position.set(0, -0.1, 0.4);
+    this.cape.add(this.capeInner);
+
+    // High Sharp Crimson Collar
+    const collarGeo = new THREE.ConeGeometry(2.5, 6, 3);
+    const collarMat = new THREE.MeshLambertMaterial({ color: 0xd81b2a });
+    
+    this.leftCollar = new THREE.Mesh(collarGeo, collarMat);
+    this.leftCollar.position.set(-3.2, 3.5, 1.0);
+    this.leftCollar.rotation.z = -Math.PI / 6; // tilt outwards
+    this.leftCollar.rotation.x = -Math.PI / 8; // tilt back slightly
+    this.cape.add(this.leftCollar);
+
+    this.rightCollar = new THREE.Mesh(collarGeo, collarMat);
+    this.rightCollar.position.set(3.2, 3.5, 1.0);
+    this.rightCollar.rotation.z = Math.PI / 6;
+    this.rightCollar.rotation.x = -Math.PI / 8;
+    this.cape.add(this.rightCollar);
+
+    // Head (pale, sharp features)
     const headGeo = new THREE.BoxGeometry(4.5, 4.5, 4.5);
-    const headMat = new THREE.MeshLambertMaterial({ color: 0xe0e0e5 });
+    const headMat = new THREE.MeshLambertMaterial({ color: 0xf0f0f5 });
     this.head = new THREE.Mesh(headGeo, headMat);
-    this.head.position.set(0, 13.25, 0);
+    this.head.position.set(0, 14.25, 0.5); // moved slightly forward because of collar
     this.head.castShadow = true;
     this.head.receiveShadow = true;
     this.humanoidGroup.add(this.head);
+
+    // Glowing Red Eyes
+    const humanEyeGeo = new THREE.BoxGeometry(0.8, 0.4, 0.2);
+    const humanEyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    this.humanLeftEye = new THREE.Mesh(humanEyeGeo, humanEyeMat);
+    this.humanLeftEye.position.set(-1.0, 0.5, 2.3);
+    this.head.add(this.humanLeftEye);
+
+    this.humanRightEye = new THREE.Mesh(humanEyeGeo, humanEyeMat);
+    this.humanRightEye.position.set(1.0, 0.5, 2.3);
+    this.head.add(this.humanRightEye);
 
     // Fangs (sharp white basic meshes attached to head)
     const fangGeo = new THREE.BoxGeometry(0.6, 1.0, 0.4);
@@ -75,55 +116,83 @@ export class Player {
     this.rightFang.visible = false;
     this.head.add(this.rightFang);
 
-    // Dark gothic collar / hair
-    const hairGeo = new THREE.BoxGeometry(5.0, 1.5, 5.0);
-    const hairMat = new THREE.MeshLambertMaterial({ color: 0x08080a });
+    // Swept-back dark hair
+    const hairGeo = new THREE.BoxGeometry(5.0, 1.5, 5.2);
+    const hairMat = new THREE.MeshLambertMaterial({ color: 0x050505 });
     this.hair = new THREE.Mesh(hairGeo, hairMat);
-    this.hair.position.set(0, 2.0, -0.2);
+    this.hair.position.set(0, 2.5, -0.4);
     this.head.add(this.hair);
+    
+    // Hair peak/widows peak
+    const peakGeo = new THREE.BoxGeometry(2.0, 1.0, 1.0);
+    this.hairPeak = new THREE.Mesh(peakGeo, hairMat);
+    this.hairPeak.position.set(0, -0.5, 2.5);
+    this.hair.add(this.hairPeak);
 
     // Arms
     const armGeo = new THREE.BoxGeometry(1.8, 6, 1.8);
-    const armMat = new THREE.MeshLambertMaterial({ color: 0x121214 });
+    const armMat = new THREE.MeshLambertMaterial({ color: 0x0a0a0c }); // black sleeves
     
     this.leftArm = new THREE.Mesh(armGeo, armMat);
-    this.leftArm.position.set(-3.9, 8.5, 0);
+    this.leftArm.position.set(-4.2, 9.0, 0);
     this.leftArm.castShadow = true;
     this.leftArm.receiveShadow = true;
     this.humanoidGroup.add(this.leftArm);
 
     this.rightArm = new THREE.Mesh(armGeo, armMat);
-    this.rightArm.position.set(3.9, 8.5, 0);
+    this.rightArm.position.set(4.2, 9.0, 0);
     this.rightArm.castShadow = true;
     this.rightArm.receiveShadow = true;
     this.humanoidGroup.add(this.rightArm);
 
+    // Silver Pauldrons (Shoulder Armor)
+    const pauldronGeo = new THREE.BoxGeometry(2.4, 1.5, 2.4);
+    const pauldronMat = new THREE.MeshLambertMaterial({ color: 0x8c8c96 }); // metallic silver
+    this.leftPauldron = new THREE.Mesh(pauldronGeo, pauldronMat);
+    this.leftPauldron.position.set(0, 3.2, 0);
+    this.leftArm.add(this.leftPauldron);
+
+    this.rightPauldron = new THREE.Mesh(pauldronGeo, pauldronMat);
+    this.rightPauldron.position.set(0, 3.2, 0);
+    this.rightArm.add(this.rightPauldron);
+
+    // Claws (Black/Dark red hands)
+    const clawGeo = new THREE.BoxGeometry(1.2, 1.5, 1.2);
+    const clawMat = new THREE.MeshLambertMaterial({ color: 0x110000 });
+    this.leftClaw = new THREE.Mesh(clawGeo, clawMat);
+    this.leftClaw.position.set(0, -3.5, 0);
+    this.leftArm.add(this.leftClaw);
+    
+    this.rightClaw = new THREE.Mesh(clawGeo, clawMat);
+    this.rightClaw.position.set(0, -3.5, 0);
+    this.rightArm.add(this.rightClaw);
+
     // Weapon: Crimson Saber attached to right hand
     const bladeGeo = new THREE.BoxGeometry(0.6, 5, 0.6);
-    const bladeMat = new THREE.MeshBasicMaterial({ color: 0xe74c3c }); // glowing crimson
+    const bladeMat = new THREE.MeshBasicMaterial({ color: 0xff1122 }); // glowing crimson
     this.blade = new THREE.Mesh(bladeGeo, bladeMat);
-    this.blade.position.set(0, -3.0, 1.5);
+    this.blade.position.set(0, -3.5, 1.5);
     this.blade.rotation.x = Math.PI / 2; // points forward
     this.rightArm.add(this.blade);
 
     const hiltGeo = new THREE.BoxGeometry(1.6, 0.4, 0.4);
-    const hiltMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+    const hiltMat = new THREE.MeshLambertMaterial({ color: 0x8c8c96 });
     this.hilt = new THREE.Mesh(hiltGeo, hiltMat);
     this.hilt.position.set(0, -1.2, 0.3);
     this.rightArm.add(this.hilt);
 
     // Legs
-    const legGeo = new THREE.BoxGeometry(2.2, 5, 2.2);
-    const legMat = new THREE.MeshLambertMaterial({ color: 0x121214 });
+    const legGeo = new THREE.BoxGeometry(2.2, 5.5, 2.2);
+    const legMat = new THREE.MeshLambertMaterial({ color: 0x0a0a0c });
 
     this.leftLeg = new THREE.Mesh(legGeo, legMat);
-    this.leftLeg.position.set(-1.3, 2.5, 0);
+    this.leftLeg.position.set(-1.4, 2.75, 0);
     this.leftLeg.castShadow = true;
     this.leftLeg.receiveShadow = true;
     this.humanoidGroup.add(this.leftLeg);
 
     this.rightLeg = new THREE.Mesh(legGeo, legMat);
-    this.rightLeg.position.set(1.3, 2.5, 0);
+    this.rightLeg.position.set(1.4, 2.75, 0);
     this.rightLeg.castShadow = true;
     this.rightLeg.receiveShadow = true;
     this.humanoidGroup.add(this.rightLeg);
