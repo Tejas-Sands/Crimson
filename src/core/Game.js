@@ -67,7 +67,7 @@ export class Game {
     this.entities = [];
     
     this.entities.push(new BossAldric(30 * GAME.TILE_SIZE, 15 * GAME.TILE_SIZE, this.scene, this.assetGen));
-    this.entities.push(new Enemy(34 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen));
+    this.entities.push(new Enemy(38 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen));
     this.entities.push(new Enemy(28 * GAME.TILE_SIZE, 20 * GAME.TILE_SIZE, this.scene, this.assetGen));
 
     // Center camera on player initially (so background menu shows the scene)
@@ -86,8 +86,8 @@ export class Game {
   restart() {
     // 1. Reset Player
     this.player.hp = PLAYER.START_HP;
-    this.player.blood = 0;
-    this.player.isStarving = true;
+    this.player.blood = 50;
+    this.player.isStarving = false;
     this.player.isDead = false;
     this.player.isBatForm = false;
     this.player.isDodging = false;
@@ -95,9 +95,10 @@ export class Game {
     this.player.invincibilityTimer = 0;
     this.player.x = 30 * GAME.TILE_SIZE;
     this.player.y = 26 * GAME.TILE_SIZE;
-    this.player.sprite.position.set(this.player.x, 8, this.player.y);
-    this.player.sprite.material = this.player.materialPlayer;
-    this.player.sprite.material.opacity = 1.0;
+    this.player.sprite.position.set(this.player.x, 0, this.player.y);
+    this.player.humanoidGroup.visible = true;
+    this.player.batGroup.visible = false;
+    this.player.setOpacity(1.0);
     
     // 2. Reset Day/Night
     this.dayNight.time = 0;
@@ -112,7 +113,7 @@ export class Game {
     }
     this.entities = [];
     this.entities.push(new BossAldric(30 * GAME.TILE_SIZE, 15 * GAME.TILE_SIZE, this.scene, this.assetGen));
-    this.entities.push(new Enemy(34 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen));
+    this.entities.push(new Enemy(38 * GAME.TILE_SIZE, 26 * GAME.TILE_SIZE, this.scene, this.assetGen));
     this.entities.push(new Enemy(28 * GAME.TILE_SIZE, 20 * GAME.TILE_SIZE, this.scene, this.assetGen));
 
     // 4. Clear particles and combat hitboxes
@@ -159,7 +160,7 @@ export class Game {
       if (entity instanceof BossAldric) {
         entity.update(dt, this.player, this.tileMap, this.combatSystem);
       } else {
-        entity.update(dt, this.tileMap);
+        entity.update(dt, this.tileMap, this.player, this.combatSystem);
       }
     }
 

@@ -4,8 +4,8 @@ import { distance } from '../core/Utils.js';
 export class BloodMeter {
   constructor(player) {
     this.player = player;
-    this.player.blood = 0;
-    this.player.isStarving = true;
+    this.player.blood = 50;
+    this.player.isStarving = false;
     
     // Ability cooldowns
     this.batCooldown = 0;
@@ -37,7 +37,7 @@ export class BloodMeter {
 
     // 2. Active Draining (E key on stunned/dead enemies)
     // For prototype, let's just let you drain dead enemies once.
-    if (input.isDown('KeyE') && !this.player.isBatForm && !this.player.isStarving) {
+    if (input.isDown('KeyE') && !this.player.isBatForm && this.player.blood < PLAYER.MAX_BLOOD) {
       // Find nearby dead enemy
       for (let target of entities) {
         if (target.isDead && !target.isDrained) {
@@ -46,6 +46,10 @@ export class BloodMeter {
             target.isDrained = true;
             this.player.blood += 40;
             if (this.player.blood > PLAYER.MAX_BLOOD) this.player.blood = PLAYER.MAX_BLOOD;
+            
+            // Feeding heals the player by 25 HP
+            this.player.hp += 25;
+            if (this.player.hp > PLAYER.START_HP) this.player.hp = PLAYER.START_HP;
             break; // Drain one at a time
           }
         }
