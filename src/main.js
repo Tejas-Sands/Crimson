@@ -1,5 +1,6 @@
 import { Game } from './core/Game.js';
 import { GAME_STATES } from './data/constants.js';
+import { StoryPrologue } from './ui/StoryPrologue.js';
 
 console.log("Crimson Awakening Prototype Started");
 
@@ -46,8 +47,7 @@ if (loader) {
   }, 750);
 }
 
-// --- Menu UI Event Bindings ---
-
+// --- UI Elements ---
 const landingPage = document.getElementById('landing-page');
 const howToPlayModal = document.getElementById('how-to-play-modal');
 const levelIntroCard = document.getElementById('level-intro-card');
@@ -55,17 +55,24 @@ const gameOverScreen = document.getElementById('game-over-screen');
 const victoryScreen = document.getElementById('victory-screen');
 const hudLayer = document.getElementById('hud-layer');
 
+// Story Prologue
+const storyPrologue = new StoryPrologue();
+
 let introTimerId = null;
 
-// Start game function
-function triggerStartSequence() {
-  // Hide landing page
+// New Game → Story Prologue → Level Intro → Gameplay
+function triggerNewGame() {
   landingPage.classList.remove('visible');
+  game.state = GAME_STATES.PROLOGUE;
   
-  // Show intro card
+  storyPrologue.start(() => {
+    // Prologue complete → show level intro
+    triggerLevelIntro();
+  });
+}
+
+function triggerLevelIntro() {
   levelIntroCard.classList.add('visible');
-  
-  // Auto-start game after 4.5 seconds
   introTimerId = setTimeout(() => {
     startTheHunt();
   }, 4500);
@@ -80,9 +87,15 @@ function startTheHunt() {
   game.startPlaying();
 }
 
-// Start button
-document.getElementById('start-game-btn').addEventListener('click', () => {
-  triggerStartSequence();
+// "New Game" button
+document.getElementById('new-game-btn').addEventListener('click', () => {
+  triggerNewGame();
+});
+
+// "Continue" button (quick start, skips prologue)
+document.getElementById('continue-btn').addEventListener('click', () => {
+  landingPage.classList.remove('visible');
+  triggerLevelIntro();
 });
 
 // Skip/Click intro card
@@ -113,10 +126,20 @@ document.getElementById('menu-game-btn').addEventListener('click', () => {
   game.state = GAME_STATES.MENU;
 });
 
-// Victory: Start Anew
+// Victory: Start Anew / Next Level
 document.getElementById('victory-retry-btn').addEventListener('click', () => {
   victoryScreen.classList.remove('visible');
+  if (game.currentLevelId < 5) {
+    game.currentLevelId++;
+  } else {
+    game.currentLevelId = 1;
+  }
   game.startPlaying();
+});
+
+// Close Lore Dialog
+document.getElementById('close-lore-btn').addEventListener('click', () => {
+  document.getElementById('lore-modal').classList.remove('visible');
 });
 
 // Victory: Return to Menu

@@ -6,6 +6,7 @@ export class HUD {
     this.bloodFill = document.getElementById('blood-fill');
     this.timeValue = document.getElementById('time-value');
     this.abilitiesContainer = document.getElementById('abilities-container');
+    this.comboDisplay = document.getElementById('combo-display');
     
     // Create ability DOM elements once
     this.slots = [];
@@ -68,6 +69,20 @@ export class HUD {
     const isDay = game.dayNight.isDaytime();
     this.timeValue.innerText = isDay ? 'DAYTIME' : 'NIGHT';
     this.timeValue.style.color = isDay ? '#f39c12' : '#8e44ad';
+
+    // Combo Display
+    if (player.hitComboCount !== undefined && player.hitComboCount > 0) {
+      if (this.comboDisplay) {
+        this.comboDisplay.style.display = 'block';
+        this.comboDisplay.innerText = `${player.hitComboCount}x COMBO`;
+        const size = Math.min(22, 14 + player.hitComboCount);
+        this.comboDisplay.style.fontSize = `${size}px`;
+      }
+    } else {
+      if (this.comboDisplay) {
+        this.comboDisplay.style.display = 'none';
+      }
+    }
 
     // Abilities
     const abilitiesState = [

@@ -4,654 +4,113 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crimson Awakening - Volume II: Cathedral of Ashes</title>
-    
-    <!-- Premium Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
-    
     <style>
-      body, html {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #060608;
-        overflow: hidden;
-        font-family: 'Montserrat', sans-serif;
-        color: #e2e2e7;
-        user-select: none;
-      }
-      
-      #game-container {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-      }
+      body, html { margin:0;padding:0;width:100%;height:100%;background:#060608;overflow:hidden;font-family:'Montserrat',sans-serif;color:#e2e2e7;user-select:none; }
+      #game-container { position:relative;width:100vw;height:100vh; }
+      canvas#gameCanvas { display:block;width:100%;height:100%; }
 
-      canvas#gameCanvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
+      /* Loader */
+      #loader { position:absolute;top:0;left:0;width:100vw;height:100vh;background:#040405;z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity 0.8s ease-out; }
+      .spinner { width:50px;height:50px;border:3px solid rgba(231,76,60,0.1);border-top-color:#e74c3c;border-radius:50%;animation:spin 1s cubic-bezier(0.4,0,0.2,1) infinite;margin-bottom:24px; }
+      @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+      .loading-text { color:#e74c3c;font-family:'Cinzel',serif;letter-spacing:5px;font-weight:700;font-size:18px;animation:pulse 1.5s ease-in-out infinite;margin-bottom:10px; }
+      .loading-tip { color:#71717a;font-size:12px;font-style:italic;text-align:center;max-width:80%;margin-top:15px;font-weight:300; }
+      .progress-bar-container { width:200px;height:2px;background:rgba(231,76,60,0.1);border-radius:1px;overflow:hidden;margin-top:15px; }
+      .progress-bar-fill { height:100%;background:#e74c3c;width:0%;transition:width 0.4s cubic-bezier(0.1,0.8,0.25,1); }
+      @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
-      /* Loader Overlay */
-      #loader {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: #040405;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        transition: opacity 0.8s ease-out;
-      }
-      
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 3px solid rgba(231, 76, 60, 0.1);
-        border-top-color: #e74c3c;
-        border-radius: 50%;
-        animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        margin-bottom: 24px;
-      }
-      
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      .loading-text {
-        color: #e74c3c;
-        font-family: 'Cinzel', serif;
-        letter-spacing: 5px;
-        font-weight: 700;
-        font-size: 18px;
-        animation: pulse 1.5s ease-in-out infinite;
-        margin-bottom: 10px;
-      }
-      
-      .loading-tip {
-        color: #71717a;
-        font-size: 12px;
-        font-style: italic;
-        text-align: center;
-        max-width: 80%;
-        margin-top: 15px;
-        font-weight: 300;
-      }
-      
-      .progress-bar-container {
-        width: 200px;
-        height: 2px;
-        background: rgba(231, 76, 60, 0.1);
-        border-radius: 1px;
-        overflow: hidden;
-        margin-top: 15px;
-      }
-      
-      .progress-bar-fill {
-        height: 100%;
-        background: #e74c3c;
-        width: 0%;
-        transition: width 0.4s cubic-bezier(0.1, 0.8, 0.25, 1);
-      }
-      
-      @keyframes pulse {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 1; }
-      }
+      /* Vignette & Rain */
+      #vignette { position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;box-shadow:inset 0 0 160px rgba(0,0,0,0.95);z-index:5; }
+      #rainCanvas { position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4; }
 
-      /* Vignette Overlay */
-      #vignette {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.95);
-        z-index: 5;
-      }
+      /* HUD */
+      #hud-layer { position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box; }
+      .hud-top { display:flex;justify-content:space-between;padding:30px; }
+      .hud-panel { background:rgba(10,10,12,0.85);border:1px solid #1c1c24;padding:15px 25px;border-radius:3px;min-width:220px;backdrop-filter:blur(5px);box-shadow:0 4px 20px rgba(0,0,0,0.6); }
+      .health-row,.blood-row { display:flex;align-items:center;margin-bottom:12px; }
+      .blood-row { margin-bottom:0; }
+      .icon { width:18px;height:18px;margin-right:15px;background-size:contain;background-repeat:no-repeat;display:inline-block; }
+      .health-text { color:#e74c3c;font-family:'Cinzel',serif;font-size:20px;font-weight:700;letter-spacing:1px; }
+      .blood-bar-container { width:160px;height:8px;border-radius:1px;background:rgba(255,0,0,0.05);border:1px solid #3c1212;overflow:hidden; }
+      .blood-bar-fill { height:100%;background:#e74c3c;transition:width 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px rgba(231,76,60,0.6); }
+      #time-value { font-family:'Cinzel',serif;font-size:16px;font-weight:700;letter-spacing:3px;margin-top:5px; }
+      .hud-bottom { display:flex;justify-content:center;padding:30px;gap:15px; }
+      .ability-slot { width:55px;height:55px;background:rgba(10,10,12,0.9);border:1px solid #1f1f26;border-radius:2px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 0;box-sizing:border-box;backdrop-filter:blur(5px);box-shadow:0 4px 15px rgba(0,0,0,0.5);transition:border-color 0.3s,background 0.3s; }
+      .ability-slot.active { border-color:#e74c3c;background:rgba(40,10,10,0.7);box-shadow:0 0 10px rgba(231,76,60,0.2); }
+      .ability-key { font-size:12px;font-weight:700;color:#e74c3c; }
+      .ability-name { font-size:10px;color:#71717a;font-weight:500;text-transform:uppercase;letter-spacing:1px; }
+      .ability-slot.active .ability-name { color:#e2e2e7; }
+      .cooldown-overlay { position:absolute;bottom:0;left:0;width:100%;background:rgba(0,0,0,0.75);height:0%;transition:height 0.1s linear; }
 
-      /* Ambient Rain overlay */
-      #rainCanvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 4;
-      }
+      /* Overlay Screens */
+      .overlay-screen { position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:500;opacity:0;visibility:hidden;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),visibility 0.8s;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box; }
+      .overlay-screen.visible { opacity:1;visibility:visible; }
 
-      /* HUD Overlay */
-      #hud-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-sizing: border-box;
-      }
+      /* Landing Page */
+      #landing-page { background:#060608;flex-direction:row;z-index:1000; }
+      .landing-left { flex:1.2;height:100%;background:url('/assets/noir_key_art-Bl6ecLIB.png') no-repeat center center;background-size:cover;position:relative; }
+      .landing-left::after { content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to right,rgba(6,6,8,0) 50%,rgba(6,6,8,1) 100%),linear-gradient(to top,rgba(6,6,8,0.7) 0%,rgba(6,6,8,0) 40%); }
+      .landing-right { width:520px;height:100%;padding:80px 60px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;background:#060608;border-left:1px solid #121217; }
+      .game-title { font-family:'Cinzel',serif;font-size:44px;font-weight:900;color:#fff;text-shadow:0 0 15px rgba(231,76,60,0.3);margin:0 0 4px 0;letter-spacing:2px; }
+      .game-subtitle { font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#e74c3c;margin:0 0 40px 0;letter-spacing:5px;text-transform:uppercase; }
+      .game-lore { font-size:14px;font-weight:300;line-height:1.7;color:#a1a1aa;margin-bottom:50px;font-style:italic;border-left:2px solid #3c1212;padding-left:20px; }
+      .menu-buttons { display:flex;flex-direction:column;gap:15px; }
 
-      .hud-top {
-        display: flex;
-        justify-content: space-between;
-        padding: 30px;
-      }
-
-      .hud-panel {
-        background: rgba(10, 10, 12, 0.85);
-        border: 1px solid #1c1c24;
-        padding: 15px 25px;
-        border-radius: 3px;
-        min-width: 220px;
-        backdrop-filter: blur(5px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-      }
-
-      .health-row, .blood-row {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-      
-      .blood-row {
-        margin-bottom: 0;
-      }
-
-      .icon {
-        width: 18px;
-        height: 18px;
-        margin-right: 15px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        display: inline-block;
-      }
-
-      .health-text {
-        color: #e74c3c;
-        font-family: 'Cinzel', serif;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 1px;
-      }
-
-      .blood-bar-container {
-        width: 160px;
-        height: 8px;
-        border-radius: 1px;
-        background: rgba(255, 0, 0, 0.05);
-        border: 1px solid #3c1212;
-        overflow: hidden;
-      }
-
-      .blood-bar-fill {
-        height: 100%;
-        background: #e74c3c;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
-      }
-
-      #time-value {
-        font-family: 'Cinzel', serif;
-        font-size: 16px;
-        font-weight: 700;
-        letter-spacing: 3px;
-        margin-top: 5px;
-      }
-
-      .hud-bottom {
-        display: flex;
-        justify-content: center;
-        padding: 30px;
-        gap: 15px;
-      }
-
-      .ability-slot {
-        width: 55px;
-        height: 55px;
-        background: rgba(10, 10, 12, 0.9);
-        border: 1px solid #1f1f26;
-        border-radius: 2px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 0;
-        box-sizing: border-box;
-        backdrop-filter: blur(5px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        transition: border-color 0.3s, background 0.3s;
-      }
-
-      .ability-slot.active {
-        border-color: #e74c3c;
-        background: rgba(40, 10, 10, 0.7);
-        box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
-      }
-
-      .ability-key {
-        font-size: 12px;
-        font-weight: 700;
-        color: #e74c3c;
-      }
-
-      .ability-name {
-        font-size: 10px;
-        color: #71717a;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      
-      .ability-slot.active .ability-name {
-        color: #e2e2e7;
-      }
-
-      .cooldown-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.75);
-        height: 0%;
-        transition: height 0.1s linear;
-      }
-
-      /* Cinematic Overlay Screens */
-      .overlay-screen {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 500;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-      }
-      
-      .overlay-screen.visible {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      /* Landing Page (Split Layout) */
-      #landing-page {
-        background: #060608;
-        flex-direction: row;
-        z-index: 1000;
-      }
-
-      .landing-left {
-        flex: 1.2;
-        height: 100%;
-        background: url('/assets/noir_key_art-Bl6ecLIB.png') no-repeat center center;
-        background-size: cover;
-        position: relative;
-      }
-
-      .landing-left::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to right, rgba(6, 6, 8, 0) 50%, rgba(6, 6, 8, 1) 100%),
-                    linear-gradient(to top, rgba(6, 6, 8, 0.7) 0%, rgba(6, 6, 8, 0) 40%);
-      }
-
-      .landing-right {
-        width: 520px;
-        height: 100%;
-        padding: 80px 60px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        background: #060608;
-        border-left: 1px solid #121217;
-      }
-
-      .game-title {
-        font-family: 'Cinzel', serif;
-        font-size: 44px;
-        font-weight: 900;
-        color: #ffffff;
-        text-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
-        margin: 0 0 4px 0;
-        letter-spacing: 2px;
-      }
-
-      .game-subtitle {
-        font-family: 'Cinzel', serif;
-        font-size: 13px;
-        font-weight: 700;
-        color: #e74c3c;
-        margin: 0 0 40px 0;
-        letter-spacing: 5px;
-        text-transform: uppercase;
-      }
-
-      .game-lore {
-        font-size: 14px;
-        font-weight: 300;
-        line-height: 1.7;
-        color: #a1a1aa;
-        margin-bottom: 50px;
-        font-style: italic;
-        border-left: 2px solid #3c1212;
-        padding-left: 20px;
-      }
-
-      .menu-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .btn-noir {
-        font-family: 'Cinzel', serif;
-        font-weight: 700;
-        font-size: 15px;
-        color: #ffffff;
-        background: #0e0e11;
-        border: 1px solid #4a1313;
-        padding: 16px 30px;
-        cursor: pointer;
-        border-radius: 2px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-transform: uppercase;
-        letter-spacing: 3px;
-        text-align: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      }
-
-      .btn-noir:hover {
-        background: #e74c3c;
-        border-color: #ff5555;
-        box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-        transform: translateY(-2px);
-      }
-
-      .btn-secondary {
-        background: transparent;
-        border-color: #27272a;
-      }
-
-      .btn-secondary:hover {
-        border-color: #a1a1aa;
-        background: rgba(255, 255, 255, 0.03);
-        box-shadow: none;
-        transform: translateY(-2px);
-      }
+      .btn-noir { font-family:'Cinzel',serif;font-weight:700;font-size:15px;color:#fff;background:#0e0e11;border:1px solid #4a1313;padding:16px 30px;cursor:pointer;border-radius:2px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);text-transform:uppercase;letter-spacing:3px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.3); }
+      .btn-noir:hover { background:#e74c3c;border-color:#ff5555;box-shadow:0 0 20px rgba(231,76,60,0.5);transform:translateY(-2px); }
+      .btn-secondary { background:transparent;border-color:#27272a; }
+      .btn-secondary:hover { border-color:#a1a1aa;background:rgba(255,255,255,0.03);box-shadow:none;transform:translateY(-2px); }
 
       /* How to Play Modal */
-      #how-to-play-modal {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(4, 4, 5, 0.96);
-        z-index: 1100;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.4s ease, visibility 0.4s;
-      }
-      
-      #how-to-play-modal.visible {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .modal-content {
-        background: #0d0d10;
-        border: 1px solid #1f1f26;
-        padding: 45px;
-        border-radius: 3px;
-        max-width: 580px;
-        width: 90%;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-        box-sizing: border-box;
-      }
-
-      .modal-title {
-        font-family: 'Cinzel', serif;
-        font-size: 26px;
-        color: #e74c3c;
-        margin-top: 0;
-        margin-bottom: 25px;
-        text-align: center;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-      }
-
-      .controls-grid {
-        display: grid;
-        grid-template-columns: 110px 1fr;
-        gap: 14px;
-        margin-bottom: 35px;
-        max-height: 300px;
-        overflow-y: auto;
-        padding-right: 5px;
-      }
-      
-      .controls-grid::-webkit-scrollbar {
-        width: 4px;
-      }
-      .controls-grid::-webkit-scrollbar-thumb {
-        background: #27272a;
-      }
-
-      .key-label {
-        background: #18181f;
-        border: 1px solid #27272a;
-        border-radius: 2px;
-        padding: 5px 8px;
-        text-align: center;
-        font-family: monospace;
-        font-size: 13px;
-        font-weight: 700;
-        color: #e74c3c;
-      }
-
-      .key-desc {
-        color: #a1a1aa;
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        line-height: 1.4;
-      }
-
-      .close-modal-btn {
-        font-family: 'Cinzel', serif;
-        font-size: 13px;
-        font-weight: 700;
-        width: 100%;
-        border: 1px solid #27272a;
-        background: transparent;
-        color: #71717a;
-        padding: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-      }
-
-      .close-modal-btn:hover {
-        color: #ffffff;
-        border-color: #71717a;
-        background: rgba(255, 255, 255, 0.02);
-      }
+      #how-to-play-modal { position:absolute;top:0;left:0;width:100vw;height:100vh;background:rgba(4,4,5,0.96);z-index:1100;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity 0.4s ease,visibility 0.4s; }
+      #how-to-play-modal.visible { opacity:1;visibility:visible; }
+      .modal-content { background:#0d0d10;border:1px solid #1f1f26;padding:45px;border-radius:3px;max-width:580px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.8);box-sizing:border-box; }
+      .modal-title { font-family:'Cinzel',serif;font-size:26px;color:#e74c3c;margin-top:0;margin-bottom:25px;text-align:center;letter-spacing:3px;text-transform:uppercase; }
+      .controls-grid { display:grid;grid-template-columns:110px 1fr;gap:14px;margin-bottom:35px;max-height:300px;overflow-y:auto;padding-right:5px; }
+      .controls-grid::-webkit-scrollbar { width:4px; }
+      .controls-grid::-webkit-scrollbar-thumb { background:#27272a; }
+      .key-label { background:#18181f;border:1px solid #27272a;border-radius:2px;padding:5px 8px;text-align:center;font-family:monospace;font-size:13px;font-weight:700;color:#e74c3c; }
+      .key-desc { color:#a1a1aa;font-size:13px;display:flex;align-items:center;line-height:1.4; }
+      .close-modal-btn { font-family:'Cinzel',serif;font-size:13px;font-weight:700;width:100%;border:1px solid #27272a;background:transparent;color:#71717a;padding:14px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:2px; }
+      .close-modal-btn:hover { color:#fff;border-color:#71717a;background:rgba(255,255,255,0.02); }
 
       /* Level Intro Card */
-      #level-intro-card {
-        background: #040405;
-        z-index: 998;
-      }
+      #level-intro-card { background:#040405;z-index:998; }
+      .intro-chapter { font-family:'Cinzel',serif;font-size:16px;color:#e74c3c;letter-spacing:8px;margin-bottom:12px;text-transform:uppercase; }
+      .intro-title { font-family:'Cinzel',serif;font-size:36px;color:#fff;letter-spacing:4px;margin-bottom:25px;text-align:center;text-transform:uppercase; }
+      .intro-text { font-size:14px;line-height:1.8;color:#71717a;text-align:center;max-width:520px;margin-bottom:40px;font-style:italic;font-weight:300; }
+      .intro-objectives { border:1px solid #181822;padding:25px 40px;width:320px;background:rgba(10,10,12,0.6);border-radius:2px; }
+      .intro-obj-title { font-family:'Cinzel',serif;font-size:13px;color:#e74c3c;margin-top:0;margin-bottom:15px;letter-spacing:3px;text-align:center;text-transform:uppercase; }
+      .intro-obj-item { font-size:13px;color:#d1d1d6;margin:10px 0;display:flex;align-items:center;gap:12px; }
+      .intro-obj-checkbox { width:8px;height:8px;border:1px solid #e74c3c;background:transparent;display:inline-block; }
+      .intro-skip-prompt { margin-top:45px;font-size:12px;color:#52525b;font-style:italic;animation:pulse 1.5s infinite;cursor:pointer;letter-spacing:1px; }
 
-      .intro-chapter {
-        font-family: 'Cinzel', serif;
-        font-size: 16px;
-        color: #e74c3c;
-        letter-spacing: 8px;
-        margin-bottom: 12px;
-        text-transform: uppercase;
-      }
+      /* Game Over */
+      #game-over-screen { background:rgba(12,2,2,0.92);z-index:997;font-family:'Cinzel',serif; }
+      .game-over-title { font-size:46px;font-weight:900;color:#e74c3c;letter-spacing:8px;text-shadow:0 0 20px rgba(231,76,60,0.4);margin-bottom:8px;text-transform:uppercase; }
+      .game-over-subtitle { font-family:'Montserrat',sans-serif;font-size:14px;color:#a1a1aa;margin-bottom:40px;font-style:italic; }
 
-      .intro-title {
-        font-family: 'Cinzel', serif;
-        font-size: 36px;
-        color: #ffffff;
-        letter-spacing: 4px;
-        margin-bottom: 25px;
-        text-align: center;
-        text-transform: uppercase;
-      }
+      /* Victory */
+      #victory-screen { background:rgba(6,6,8,0.96);z-index:997;font-family:'Cinzel',serif; }
+      .victory-title { font-size:46px;font-weight:900;color:#fff;letter-spacing:8px;text-shadow:0 0 25px rgba(255,255,255,0.2);margin-bottom:8px;text-transform:uppercase; }
+      .victory-subtitle { color:#e74c3c;font-size:16px;letter-spacing:5px;margin-bottom:30px;text-transform:uppercase; }
+      .victory-lore { font-family:'Montserrat',sans-serif;font-size:14px;color:#a1a1aa;text-align:center;max-width:480px;line-height:1.7;margin-bottom:40px;font-style:italic;font-weight:300; }
 
-      .intro-text {
-        font-size: 14px;
-        line-height: 1.8;
-        color: #71717a;
-        text-align: center;
-        max-width: 520px;
-        margin-bottom: 40px;
-        font-style: italic;
-        font-weight: 300;
-      }
-
-      .intro-objectives {
-        border: 1px solid #181822;
-        padding: 25px 40px;
-        width: 320px;
-        background: rgba(10, 10, 12, 0.6);
-        border-radius: 2px;
-      }
-
-      .intro-obj-title {
-        font-family: 'Cinzel', serif;
-        font-size: 13px;
-        color: #e74c3c;
-        margin-top: 0;
-        margin-bottom: 15px;
-        letter-spacing: 3px;
-        text-align: center;
-        text-transform: uppercase;
-      }
-
-      .intro-obj-item {
-        font-size: 13px;
-        color: #d1d1d6;
-        margin: 10px 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .intro-obj-checkbox {
-        width: 8px;
-        height: 8px;
-        border: 1px solid #e74c3c;
-        background: transparent;
-        display: inline-block;
-      }
-
-      .intro-skip-prompt {
-        margin-top: 45px;
-        font-size: 12px;
-        color: #52525b;
-        font-style: italic;
-        animation: pulse 1.5s infinite;
-        cursor: pointer;
-        letter-spacing: 1px;
-      }
-
-      /* Game Over Screen */
-      #game-over-screen {
-        background: rgba(12, 2, 2, 0.92);
-        z-index: 997;
-        font-family: 'Cinzel', serif;
-      }
-
-      .game-over-title {
-        font-size: 46px;
-        font-weight: 900;
-        color: #e74c3c;
-        letter-spacing: 8px;
-        text-shadow: 0 0 20px rgba(231, 76, 60, 0.4);
-        margin-bottom: 8px;
-        text-transform: uppercase;
-      }
-
-      .game-over-subtitle {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 14px;
-        color: #a1a1aa;
-        margin-bottom: 40px;
-        font-style: italic;
-      }
-
-      /* Victory Screen */
-      #victory-screen {
-        background: rgba(6, 6, 8, 0.96);
-        z-index: 997;
-        font-family: 'Cinzel', serif;
-      }
-
-      .victory-title {
-        font-size: 46px;
-        font-weight: 900;
-        color: #ffffff;
-        letter-spacing: 8px;
-        text-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
-        margin-bottom: 8px;
-        text-transform: uppercase;
-      }
-
-      .victory-subtitle {
-        color: #e74c3c;
-        font-size: 16px;
-        letter-spacing: 5px;
-        margin-bottom: 30px;
-        text-transform: uppercase;
-      }
-
-      .victory-lore {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 14px;
-        color: #a1a1aa;
-        text-align: center;
-        max-width: 480px;
-        line-height: 1.7;
-        margin-bottom: 40px;
-        font-style: italic;
-        font-weight: 300;
-      }
+      /* Story Prologue */
+      #story-prologue { position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1200;opacity:0;visibility:hidden;transition:opacity 0.6s ease,visibility 0.6s;background:#000;cursor:pointer; }
+      #story-prologue.visible { opacity:1;visibility:visible; }
+      #story-canvas { position:absolute;top:0;left:0;width:100%;height:100%; }
+      .story-content { position:absolute;bottom:0;left:0;width:100%;padding:60px 80px;box-sizing:border-box;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);z-index:1; }
+      #story-title { font-family:'Cinzel',serif;font-size:32px;font-weight:900;letter-spacing:6px;text-transform:uppercase;margin-bottom:20px; }
+      #story-text { font-family:'Montserrat',sans-serif;font-size:16px;line-height:1.9;color:#c8c8d0;font-weight:300;font-style:italic;max-width:700px;min-height:60px; }
+      #story-advance { font-size:12px;color:#52525b;margin-top:25px;letter-spacing:2px;transition:opacity 0.5s;opacity:0; }
+      #story-skip-btn { position:absolute;top:30px;right:40px;font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#52525b;background:transparent;border:1px solid #27272a;padding:8px 20px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;z-index:2; }
+      #story-skip-btn:hover { color:#fff;border-color:#71717a; }
+      .story-slide-counter { position:absolute;bottom:30px;right:40px;font-family:'Cinzel',serif;font-size:11px;color:#3a3a44;letter-spacing:3px;z-index:2; }
     </style>
-    
     <script>
       window.addEventListener('error', function(e) {
         const errDiv = document.createElement('div');
@@ -663,29 +122,25 @@
         errDiv.style.border = '1px solid #ff4d4d';
         errDiv.style.background = 'rgba(255,0,0,0.08)';
         errDiv.innerText = 'CRASH: ' + e.message + '\nLine: ' + e.lineno + ' in ' + e.filename;
-        document.getElementById('loader').appendChild(errDiv);
+        const l = document.getElementById('loader');
+        if (l) l.appendChild(errDiv);
       });
     </script>
-    <script type="module" crossorigin src="/assets/index-C62aw09N.js"></script>
+    <script type="module" crossorigin src="/assets/index-DJH8oGES.js"></script>
   </head>
   <body>
-    <!-- Initial Loading Screen -->
     <div id="loader">
       <div class="spinner"></div>
       <div class="loading-text">Awakening...</div>
-      <div class="progress-bar-container">
-        <div class="progress-bar-fill" id="progress-fill"></div>
-      </div>
+      <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-fill"></div></div>
       <div class="loading-tip" id="loading-tip"></div>
     </div>
 
-    <!-- Main Game Canvas Container -->
     <div id="game-container">
       <canvas id="gameCanvas"></canvas>
       <canvas id="rainCanvas"></canvas>
       <div id="vignette"></div>
       
-      <!-- Gameplay HUD Overlay -->
       <div id="hud-layer" style="display: none;">
         <div class="hud-top">
           <div class="hud-panel">
@@ -695,24 +150,36 @@
             </div>
             <div class="blood-row">
               <span class="icon" id="blood-icon"></span>
-              <div class="blood-bar-container">
-                <div class="blood-bar-fill" id="blood-fill" style="width: 0%;"></div>
+              <div class="blood-bar-container"><div class="blood-bar-fill" id="blood-fill" style="width: 0%;"></div></div>
+            </div>
+            <div id="combo-display" style="display: none; margin-top: 8px; font-family: 'Cinzel', serif; font-size: 14px; font-weight: bold; color: #ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.6); letter-spacing: 1px;">0x COMBO</div>
+          </div>
+          <div class="hud-panel" style="min-width: 250px;">
+            <div id="time-value" style="text-align: center; margin-bottom: 10px;">DAYTIME</div>
+            <div style="border-top: 1px solid #1c1c24; padding-top: 10px;">
+              <div style="font-family:'Cinzel',serif; font-size:12px; color:#e74c3c; letter-spacing:2px; margin-bottom:8px; text-transform:uppercase;">Objectives</div>
+              <div id="objectives-list" style="font-size:11px; color:#a1a1aa; display:flex; flex-direction:column; gap:6px;">
+                <!-- Dynamically populated -->
               </div>
             </div>
           </div>
-          
-          <div class="hud-panel" style="text-align: center;">
-            <div id="time-value">DAYTIME</div>
-          </div>
         </div>
-        
-        <div class="hud-bottom" id="abilities-container">
-          <!-- Populated dynamically by HUD.js -->
-        </div>
+        <div class="hud-bottom" id="abilities-container"></div>
       </div>
     </div>
 
-    <!-- Landing Page Overlay -->
+    <!-- Story Prologue Overlay -->
+    <div id="story-prologue">
+      <canvas id="story-canvas"></canvas>
+      <button id="story-skip-btn">Skip</button>
+      <div class="story-content">
+        <div id="story-title"></div>
+        <div id="story-text"></div>
+        <div id="story-advance">Click to continue...</div>
+      </div>
+    </div>
+
+    <!-- Landing Page -->
     <div id="landing-page" class="overlay-screen visible">
       <div class="landing-left"></div>
       <div class="landing-right">
@@ -722,7 +189,8 @@
           "The church bells ring across Dusk Hollow, drowning in a perpetual downpour. Brother Aldric maintains a holy iron grip inside the cathedral. The night demands retribution, and the ancient hunger demands blood..."
         </p>
         <div class="menu-buttons">
-          <button class="btn-noir" id="start-game-btn">Enter the Shadows</button>
+          <button class="btn-noir" id="new-game-btn">New Game</button>
+          <button class="btn-noir btn-secondary" id="continue-btn">Continue</button>
           <button class="btn-noir btn-secondary" id="how-to-play-btn">The Noir Chronicles</button>
         </div>
       </div>
@@ -735,51 +203,37 @@
         <div class="controls-grid">
           <div class="key-label">WASD</div>
           <div class="key-desc">Move the Vampire through the shadows</div>
-          
           <div class="key-label">Shift</div>
-          <div class="key-desc">Hold to Run (Increases noise & blood drain)</div>
-          
+          <div class="key-desc">Hold to Run (Increases noise &amp; blood drain)</div>
           <div class="key-label">J / Click</div>
-          <div class="key-desc">Slash Attack (Melee weapon combat)</div>
-          
+          <div class="key-desc">Combo Attack (Chain 3 hits: Light → Medium → Heavy)</div>
           <div class="key-label">K</div>
           <div class="key-desc">Dodge Roll (Provides temporary invincibility)</div>
-          
           <div class="key-label">E</div>
-          <div class="key-desc">Feed on fallen/stunned Cathedral Guards to restore Blood</div>
-          
+          <div class="key-desc">Feed on fallen guards / Read inscriptions / Interact</div>
           <div class="key-label">F</div>
           <div class="key-desc">Bat Form (Requires 25% Blood. Fly fast and undetected)</div>
-          
           <div class="key-label">G</div>
-          <div class="key-desc">Mist Step (Requires 75% Blood. Teleport through walls)</div>
+          <div class="key-desc">Mist Step (Requires 75% Blood. Teleport forward)</div>
         </div>
         <button class="close-modal-btn" id="close-modal-btn">Return to Shadows</button>
       </div>
     </div>
 
-    <!-- Chapter 1 Cinematic Intro Overlay -->
+    <!-- Level Intro Card -->
     <div id="level-intro-card" class="overlay-screen">
       <span class="intro-chapter">Chapter I</span>
       <h2 class="intro-title">Nocturne in Dusk Hollow</h2>
-      <p class="intro-text">
-        "The Cathedral of the Sacred Dawn has stood for centuries, cleansing the city of your breed. Tonight, the blood on the cobble belongs to them."
-      </p>
+      <p class="intro-text">"The Cathedral of the Sacred Dawn has stood for centuries, cleansing the city of your breed. Tonight, the blood on the cobble belongs to them."</p>
       <div class="intro-objectives">
         <h4 class="intro-obj-title">Current Objective</h4>
-        <div class="intro-obj-item">
-          <span class="intro-obj-checkbox"></span>
-          <span>Infiltrate the Cathedral to the North</span>
-        </div>
-        <div class="intro-obj-item">
-          <span class="intro-obj-checkbox"></span>
-          <span>Assassinate Brother Aldric</span>
-        </div>
+        <div class="intro-obj-item"><span class="intro-obj-checkbox"></span><span>Infiltrate the Cathedral to the North</span></div>
+        <div class="intro-obj-item"><span class="intro-obj-checkbox"></span><span>Assassinate Brother Aldric</span></div>
       </div>
       <div class="intro-skip-prompt" id="skip-intro-btn">Click anywhere to begin the hunt...</div>
     </div>
 
-    <!-- Game Over Screen -->
+    <!-- Game Over -->
     <div id="game-over-screen" class="overlay-screen">
       <h1 class="game-over-title">You Have Perished</h1>
       <p class="game-over-subtitle">"The holy guards have purged the night of your presence."</p>
@@ -789,45 +243,39 @@
       </div>
     </div>
 
-    <!-- Victory Screen -->
+    <!-- Victory -->
     <div id="victory-screen" class="overlay-screen">
       <h1 class="victory-title">The Feast Begins</h1>
       <h3 class="victory-subtitle">Chapter I Completed</h3>
-      <p class="victory-lore">
-        "Brother Aldric lies slain on the stone floor of his Cathedral. Dusk Hollow falls quiet under your shadow, and the feast of the crimson night has finally begun."
-      </p>
+      <p class="victory-lore">"Brother Aldric lies slain on the stone floor of his Cathedral. Dusk Hollow falls quiet under your shadow, and the feast of the crimson night has finally begun."</p>
       <div class="menu-buttons">
         <button class="btn-noir btn-retry" id="victory-retry-btn">Start Anew</button>
         <button class="btn-noir btn-secondary btn-retry" id="victory-menu-btn">Return to Menu</button>
       </div>
     </div>
 
-    <!-- Screen Rain Script -->
+    <!-- Lore Dialog Modal -->
+    <div id="lore-modal" class="overlay-screen" style="background: rgba(0,0,0,0.85); z-index: 1300;">
+      <div class="modal-content" style="max-width: 500px; border-color: #3c1212;">
+        <h2 class="modal-title" style="color: #e74c3c;">Ancient Inscription</h2>
+        <p id="lore-text" style="font-size: 15px; line-height: 1.8; font-style: italic; color: #a1a1aa; text-align: center; margin-bottom: 30px;"></p>
+        <button class="close-modal-btn" id="close-lore-btn">Return to Shadows</button>
+      </div>
+    </div>
+
+    <!-- Rain Script -->
     <script>
       (function() {
         const canvas = document.getElementById('rainCanvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
-
-        window.addEventListener('resize', () => {
-          width = canvas.width = window.innerWidth;
-          height = canvas.height = window.innerHeight;
-        });
-
+        window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
         const rainCount = 110;
         const drops = [];
-
         for (let i = 0; i < rainCount; i++) {
-          drops.push({
-            x: Math.random() * width,
-            y: Math.random() * height - height,
-            speed: 18 + Math.random() * 14,
-            len: 12 + Math.random() * 12,
-            opacity: 0.08 + Math.random() * 0.12
-          });
+          drops.push({ x: Math.random() * width, y: Math.random() * height - height, speed: 18 + Math.random() * 14, len: 12 + Math.random() * 12, opacity: 0.08 + Math.random() * 0.12 });
         }
-
         function animateRain() {
           ctx.clearRect(0, 0, width, height);
           for (let drop of drops) {
@@ -837,20 +285,14 @@
             ctx.moveTo(drop.x, drop.y);
             ctx.lineTo(drop.x + 1.2, drop.y + drop.len);
             ctx.stroke();
-            
             drop.y += drop.speed;
             drop.x += 1.2;
-            
-            if (drop.y > height) {
-              drop.y = -drop.len;
-              drop.x = Math.random() * width;
-            }
+            if (drop.y > height) { drop.y = -drop.len; drop.x = Math.random() * width; }
           }
           requestAnimationFrame(animateRain);
         }
         animateRain();
       })();
     </script>
-    
   </body>
 </html>

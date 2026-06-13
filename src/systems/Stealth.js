@@ -16,6 +16,7 @@ export class Stealth {
     // Player stealth factors
     let stealthFactor = 1.0;
     if (player.isBatForm) stealthFactor = 0.2; // 80% harder to see
+    if (player.isStealthHidden) stealthFactor = 0.05; // 95% harder to see (virtually invisible in bushes)
 
     for (let enemy of entities) {
       if (enemy.isDead) continue;
@@ -30,10 +31,13 @@ export class Stealth {
         const dy = player.y - enemy.y;
         const angle = Math.atan2(dy, dx);
         
-        let enemyAngle = 0; // default right
-        if (enemy.facing === 1) enemyAngle = Math.PI/2;
-        else if (enemy.facing === 2) enemyAngle = Math.PI;
-        else if (enemy.facing === 3) enemyAngle = -Math.PI/2;
+        const enemyAngle = enemy.facingAngle !== undefined ? enemy.facingAngle : (
+          enemy.facing === 1 ? Math.PI/2 : (
+            enemy.facing === 2 ? Math.PI : (
+              enemy.facing === 3 ? -Math.PI/2 : 0
+            )
+          )
+        );
 
         let angleDiff = Math.abs(angle - enemyAngle);
         if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
